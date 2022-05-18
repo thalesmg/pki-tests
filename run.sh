@@ -104,7 +104,7 @@ CA_ST="${TLS_DN_ST:-Stockholm}"
 CA_L="${TLS_DN_L:-Stockholm}"
 CA_O="${TLS_DN_O:-MyOrgName}"
 CA_OU="${TLS_DN_OU:-MyIntermediateCA}"
-CA_CN="MyServer"
+CA_CN="localhost"
 
 openssl req -config intermediate/openssl.cnf \
         -subj "/C=${CA_C}/ST=${CA_ST}/L=${CA_L}/O=${CA_O}/OU=${CA_OU}/CN=${CA_CN}" \
