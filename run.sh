@@ -170,3 +170,78 @@ openssl ca -config intermediate/openssl.cnf \
         -gencrl -out intermediate/crl/intermediate.crl.pem
 
 openssl crl -in intermediate/crl/intermediate.crl.pem -noout -text
+
+#################################################
+# Generate OCSP
+#################################################
+
+figlet Generating OCSP
+
+# -aes256
+openssl genrsa \
+        -out intermediate/private/ocsp.server.key.pem 4096
+
+CA_C="${TLS_DN_C:-SE}"
+CA_ST="${TLS_DN_ST:-Stockholm}"
+CA_L="${TLS_DN_L:-Stockholm}"
+CA_O="${TLS_DN_O:-MyOrgName}"
+CA_OU="${TLS_DN_OU:-MyIntermediateCA}"
+CA_CN="ocsp.server"
+
+openssl req -config intermediate/openssl.cnf -new -sha256 \
+        -subj "/C=${CA_C}/ST=${CA_ST}/L=${CA_L}/O=${CA_O}/OU=${CA_OU}/CN=${CA_CN}" \
+        -key intermediate/private/ocsp.server.key.pem \
+        -out intermediate/csr/ocsp.server.csr.pem
+
+CA_C="${TLS_DN_C:-SE}"
+CA_ST="${TLS_DN_ST:-Stockholm}"
+CA_L="${TLS_DN_L:-Stockholm}"
+CA_O="${TLS_DN_O:-MyOrgName}"
+CA_OU="${TLS_DN_OU:-MyIntermediateCA}"
+CA_CN="ocsp.client"
+
+# using the same key as the server
+openssl req -config intermediate/openssl.cnf -new -sha256 \
+        -subj "/C=${CA_C}/ST=${CA_ST}/L=${CA_L}/O=${CA_O}/OU=${CA_OU}/CN=${CA_CN}" \
+        -key intermediate/private/ocsp.server.key.pem \
+        -out intermediate/csr/ocsp.client.csr.pem
+
+openssl ca -config intermediate/openssl.cnf \
+        -extensions ocsp -days 375 -notext -md sha256 \
+        -in intermediate/csr/ocsp.server.csr.pem \
+        -out intermediate/certs/ocsp.server.cert.pem
+
+openssl ca -config intermediate/openssl.cnf \
+        -extensions ocsp -days 375 -notext -md sha256 \
+        -in intermediate/csr/ocsp.client.csr.pem \
+        -out intermediate/certs/ocsp.client.cert.pem
+
+# openssl genrsa -out intermediate/private/test.server.key.pem 2048
+# CA_C="${TLS_DN_C:-SE}"
+# CA_ST="${TLS_DN_ST:-Stockholm}"
+# CA_L="${TLS_DN_L:-Stockholm}"
+# CA_O="${TLS_DN_O:-MyOrgName}"
+# CA_OU="${TLS_DN_OU:-MyIntermediateCA}"
+# CA_CN="test.server"
+# openssl req -config intermediate/openssl.cnf \
+#       -key intermediate/private/test.server.key.pem \
+#       -new -sha256 -out intermediate/csr/test.server.csr.pem
+# openssl ca -config intermediate/openssl.cnf \
+#       -extensions server_cert -days 375 -notext -md sha256 \
+#       -in intermediate/csr/test.server.csr.pem \
+#       -out intermediate/certs/test.server.cert.pem
+# -sha256
+# openssl ocsp -port 127.0.0.1:9877 -text -sha256 \
+#         -index intermediate/index.txt \
+#         -CA intermediate/certs/ca-chain.cert.pem \
+#         -rkey intermediate/private/ocsp.server.key.pem \
+#         -rsigner intermediate/certs/ocsp.server.cert.pem \
+#         -nrequest 1
+
+# openssl ocsp -CAfile intermediate/certs/ca-chain.cert.pem \
+#         -url http://127.0.0.1:9877 -resp_text \
+#         -issuer intermediate/certs/intermediate.cert.pem \
+#         -cert intermediate/certs/test.server.cert.pem
+
+# openssl ca -config intermediate/openssl.cnf \
+#         -revoke intermediate/certs/test.server.cert.pem
