@@ -206,12 +206,12 @@ openssl req -config intermediate/openssl.cnf -new -sha256 \
         -key intermediate/private/ocsp.server.key.pem \
         -out intermediate/csr/ocsp.client.csr.pem
 
-openssl ca -config intermediate/openssl.cnf \
+openssl ca -batch -config intermediate/openssl.cnf \
         -extensions ocsp -days 375 -notext -md sha256 \
         -in intermediate/csr/ocsp.server.csr.pem \
         -out intermediate/certs/ocsp.server.cert.pem
 
-openssl ca -config intermediate/openssl.cnf \
+openssl ca -batch -config intermediate/openssl.cnf \
         -extensions ocsp -days 375 -notext -md sha256 \
         -in intermediate/csr/ocsp.client.csr.pem \
         -out intermediate/certs/ocsp.client.cert.pem
