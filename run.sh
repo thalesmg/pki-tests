@@ -171,6 +171,32 @@ openssl ca -config intermediate/openssl.cnf \
 
 openssl crl -in intermediate/crl/intermediate.crl.pem -noout -text
 
+openssl genrsa -out intermediate/private/client-revoked.key.pem 2048
+
+CA_C="${TLS_DN_C:-SE}"
+CA_ST="${TLS_DN_ST:-Stockholm}"
+CA_L="${TLS_DN_L:-Stockholm}"
+CA_O="${TLS_DN_O:-MyOrgName}"
+CA_OU="${TLS_DN_OU:-MyIntermediateCA}"
+CA_CN="client-revoked"
+
+openssl req -new -key intermediate/private/client-revoked.key.pem \
+        -subj "/C=${CA_C}/ST=${CA_ST}/L=${CA_L}/O=${CA_O}/OU=${CA_OU}/CN=${CA_CN}" \
+        -out intermediate/csr/client-revoked.csr.pem
+
+openssl ca -batch -config intermediate/openssl.cnf \
+        -extensions usr_cert -notext -md sha256 \
+        -in intermediate/csr/client-revoked.csr.pem \
+        -out intermediate/certs/client-revoked.cert.pem
+
+openssl ca -config intermediate/openssl.cnf \
+        -revoke intermediate/certs/client-revoked.cert.pem
+
+# re-create the CRL!
+
+openssl ca -config intermediate/openssl.cnf \
+        -gencrl -out intermediate/crl/intermediate.crl.pem
+
 #################################################
 # Generate OCSP
 #################################################
