@@ -113,7 +113,7 @@ openssl req -config intermediate/openssl.cnf \
 
 openssl ca -config intermediate/openssl.cnf \
         -batch \
-        -extensions server_cert -days 375 -notext -md sha256 \
+        -extensions server_cert -days 3750 -notext -md sha256 \
         -in intermediate/csr/server.csr.pem \
         -out intermediate/certs/server.cert.pem
 # chmod 444 intermediate/certs/server.cert.pem
@@ -149,7 +149,7 @@ openssl req -config intermediate/openssl.cnf \
 
 openssl ca -config intermediate/openssl.cnf \
         -batch \
-        -extensions usr_cert -days 375 -notext -md sha256 \
+        -extensions usr_cert -days 3750 -notext -md sha256 \
         -in intermediate/csr/client.csr.pem \
         -out intermediate/certs/client.cert.pem
 # chmod 444 intermediate/certs/client.cert.pem
@@ -195,7 +195,7 @@ openssl ca -config intermediate/openssl.cnf \
 # re-create the CRL!
 
 openssl ca -config intermediate/openssl.cnf \
-        -gencrl -out intermediate/crl/intermediate.crl.pem
+        -gencrl -out intermediate/crl/intermediate-revoked.crl.pem
 
 #################################################
 # Generate OCSP
@@ -233,12 +233,12 @@ openssl req -config intermediate/openssl.cnf -new -sha256 \
         -out intermediate/csr/ocsp.client.csr.pem
 
 openssl ca -batch -config intermediate/openssl.cnf \
-        -extensions ocsp -days 375 -notext -md sha256 \
+        -extensions ocsp -days 3750 -notext -md sha256 \
         -in intermediate/csr/ocsp.server.csr.pem \
         -out intermediate/certs/ocsp.server.cert.pem
 
 openssl ca -batch -config intermediate/openssl.cnf \
-        -extensions ocsp -days 375 -notext -md sha256 \
+        -extensions ocsp -days 3750 -notext -md sha256 \
         -in intermediate/csr/ocsp.client.csr.pem \
         -out intermediate/certs/ocsp.client.cert.pem
 
