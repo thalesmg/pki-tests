@@ -242,18 +242,22 @@ CA_OU="${TLS_DN_OU:-MyIntermediateCA}"
 CA_CN="ocsp.client"
 
 # using the same key as the server
+cp intermediate/private/ocsp.{server,client}.key.pem
+
 openssl req -config intermediate/openssl.cnf -new -sha256 \
         -subj "/C=${CA_C}/ST=${CA_ST}/L=${CA_L}/O=${CA_O}/OU=${CA_OU}/CN=${CA_CN}" \
-        -key intermediate/private/ocsp.server.key.pem \
+        -key intermediate/private/ocsp.client.key.pem \
         -out intermediate/csr/ocsp.client.csr.pem
 
+# using the `ocsp` extension here is probably wrong?!
 openssl ca -batch -config intermediate/openssl.cnf \
+        # -extensions server_cert -days 3750 -notext -md sha256 \
         -extensions ocsp -days 3750 -notext -md sha256 \
         -in intermediate/csr/ocsp.server.csr.pem \
         -out intermediate/certs/ocsp.server.cert.pem
 
 openssl ca -batch -config intermediate/openssl.cnf \
-        -extensions ocsp -days 3750 -notext -md sha256 \
+        -extensions usr_cert -days 3750 -notext -md sha256 \
         -in intermediate/csr/ocsp.client.csr.pem \
         -out intermediate/certs/ocsp.client.cert.pem
 
