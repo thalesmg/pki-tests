@@ -197,6 +197,21 @@ openssl ca -config intermediate/openssl.cnf \
 openssl ca -config intermediate/openssl.cnf \
         -gencrl -out intermediate/crl/intermediate-revoked.crl.pem
 
+# generate a client cert without distribution points
+
+CA_CN="client-no-dist-points"
+
+openssl genrsa -out intermediate/private/client-no-dist-points.key.pem 2048
+
+openssl req -new -key intermediate/private/client-no-dist-points.key.pem \
+        -subj "/C=${CA_C}/ST=${CA_ST}/L=${CA_L}/O=${CA_O}/OU=${CA_OU}/CN=${CA_CN}" \
+        -out intermediate/csr/client-no-dist-points.csr.pem
+
+openssl ca -batch -config intermediate/openssl.cnf \
+        -extensions usr_cert_no_crl -notext -md sha256 \
+        -in intermediate/csr/client-no-dist-points.csr.pem \
+        -out intermediate/certs/client-no-dist-points.cert.pem
+
 #################################################
 # Generate OCSP
 #################################################
